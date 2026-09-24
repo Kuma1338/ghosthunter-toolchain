@@ -18,7 +18,7 @@
 | **增伤** | 调用 ServeraddATK(Value) 使服务器上调角色攻击数值 | F9 键（当前 +200000）⚠️ 见 S4 |
 | **回血** | 调用 ServeraddHP(Value) | F10 键 ⚠️ 见 S4 |
 | **后门函数** | 游戏客户端编译内置的 Server* 系列调试 RPC（addATK/addHP/WHOSYOURDADDY/ResetCD/AddItem/AddAttribute…），历史版本服务器直接执行，**2026-09-24 更新后被服务器忽略** | NOS_PlayerHuman 类链 |
-| **反作弊（交互节奏）** | 短时间（约 1~2 分钟窗口）内连续交互约 8 次即被踢出对局；实测打怪不重置计数 | — |
+| **反作弊（交互节奏）** | 短时间内（估计 1~2 分钟，未精确测定）连续交互约 8 次即被踢出对局；打怪/其他行为是否重置计数未验证 | — |
 | **吸怪** | （已否决的方案）把怪物 actor 移到玩家附近——服务器权威复制会立即拉回 | — |
 | **12 字节跳转替换** | 进程内 hook 技术：备份目标函数前 12 字节，替换为 mov rax,imm64; jmp rax | xixing_dll.cpp |
 | **跳转替换（13 字节）** | 同上，用于 UActorComponent::CallRemoteFunction（RPC 记录） | installCRFHook |

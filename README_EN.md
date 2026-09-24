@@ -30,7 +30,7 @@ Security research toolchain and findings for **QuLing Tianshi (驱灵天师)**, 
 2. **No behavioral validation on interact RPCs** — `ServerSetPreBeInteractComponent` + `TryActivateAbility` can be scripted to batch-trigger interactions (auto-opening chests/mining/gathering). The server only range-checks (~70–90 m) with no frequency or behavioral-pattern analysis.
 3. **No distance/frequency validation on pickup RPC** — `Server_RequestPickupByUI` can be called in bulk for every drop in range.
 4. **Anti-cheat (Hercules) blind spots** — DLL injection (CreateRemoteThread + LoadLibraryW), `ProcessEvent` inline hooks (12-byte jump replacement), and shared-memory command queues run entirely undetected.
-5. **Weak anti-farming rule** — roughly 8 interactions within a short window (measured ≈1–2 minutes) triggers a kick. The rule is a simple time-window counter: combat does **not** reset the count (measured); no deeper behavioral analysis exists.
+5. **Weak anti-farming rule** — roughly 8 interactions within a short window (estimated 1–2 minutes, not precisely measured) triggers a kick. Appears to be a simple time-window counter with no deeper behavioral analysis; whether combat or other actions reset the count is **unverified**.
 
 
 ### 3. Other client-side content found during research (for the developers' reference)

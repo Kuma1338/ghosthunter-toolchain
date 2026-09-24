@@ -51,10 +51,33 @@ All of the following was sealed or neutralized by the 2026-09-24 update, but **t
 | ServeraddHP semantics | Adds directly to the HP pool — one call of +200000 doubled the bar in the old build (not a full heal) |
 | Trade-house market prices | Server-side only, never cached on the client (full-memory scan found zero hits) |
 
-### Remediation advice
+### Remediation advice (mapped to each live finding)
 
-- **Server-side**: behavioral-pattern analysis for interactions (frequency, path coherence, target distribution); distance and rate validation for pickups.
-- **Client-side**: obfuscation/encryption of key in-memory data (at minimum to defeat static offset analysis); injection and inline-hook detection; strip or build-gate debug functions and test layers.
+**1. Plaintext sensitive data (ESP)**
+- Root fix (server): sync container quality data **on demand** (when the player approaches/looks at a target) instead of keeping the full map's quality markers resident in client memory
+- Client mitigation: per-launch randomized offsets for key globals (GNames/GWorld) and encrypted quality markers — raising re-location cost from "ten minutes" to "per launch"
+- Verified status: after the client rebuild, offsets merely shifted uniformly (+0x70/+0x1000); signature scan + vtable-ref counting + name-pool content scan re-locates everything in ~10 minutes (see `tools/offset_hunt*.py`)
+
+**2. No behavioral validation on interact RPCs**
+- Server-side: keep the existing ~70-90 m range check, add **view-direction validation** (player must roughly face the target)
+- Target-distribution analysis: batch interaction with homogeneous target clusters (same container/gather type) within a short window = anomaly
+- Tighter per-time-window interaction caps with per-account sliding windows
+
+**3. No distance/frequency validation on pickup RPC**
+- Validate pickup distance against the **server-tracked** player position (never trust client-reported position)
+- Rate cap (e.g. ≤5/s) + cross-validation against movement trajectory (consecutive pickups faster than physically possible = anomaly)
+
+**4. Anti-cheat (Hercules) blind spots**
+- Injection detection: monitor `CreateRemoteThread` + `LoadLibraryW` combinations; scan for unsigned modules
+- **Inline-hook integrity checks**: periodic hash verification of the first N bytes of critical functions (`ProcessEvent` / `CallRemoteFunction`) — this catches the 12/13-byte jump replacement used in this research
+- Named-kernel-object scanning: non-game named shared-memory sections (this toolchain communicates over fixed-name sections, trivially discoverable)
+
+**5. Weak anti-farming rule**
+- Beyond the time-window counter: interaction **target-diversity** weighting (consecutive homogeneous targets count heavier) and movement-trajectory cross-validation (teleport-like target switching = anomaly)
+- Hot-updateable rule parameters (window length / caps) so fixed values cannot be probed
+
+**General**
+- Remove all debug/test content from the inventory above **at build time** (build-configuration stripping) — runtime gating has been shown to invite per-layer bypass attempts (this research probed every layer)
 
 ## Repository layout
 

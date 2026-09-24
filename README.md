@@ -30,7 +30,26 @@
 2. **交互 RPC 无行为校验** —— `ServerSetPreBeInteractComponent` + `TryActivateAbility` 可被脚本化批量触发（自动开箱/采矿/采集），服务器仅校验距离（约 70-90m），无频率与行为模式分析。
 3. **拾取 RPC 无距离/频率校验** —— `Server_RequestPickupByUI` 可对范围内掉落物逐个批量调用。
 4. **反作弊（Hercules）检测盲区** —— DLL 注入（CreateRemoteThread + LoadLibraryW）、`ProcessEvent` inline hook（12 字节跳转替换）、共享内存命令队列全程无告警。
-5. **反 farm 规则过弱** —— "连续约 8 次交互不打怪踢出"可通过穿插一次攻击轻易绕过。
+5. **反 farm 规则过弱** —— 短时间（实测约 1~2 分钟窗口）内连续交互约 8 次即被踢出对局。规则仅为简单的时间窗计数：实测**打怪并不重置计数**，穿插其他行为能否重置未完全确认；无更细的行为模式分析。
+
+
+### 三、研究过程中发现的其他客户端内容（供官方排查参考）
+
+以下内容在 2026-09-24 更新后均已被封堵或空转，但**相关代码仍编译在正式客户端中**，建议从构建中彻底移除：
+
+| 发现 | 说明 |
+|---|---|
+| GM 面板函数 | `ShowCheatPanel`（本地函数；pawn 上有 `CheatPanel` 挂点但从未创建实例）——被未激活的权限标志门控 |
+| 完整 CheatManager 类 | UE 原生作弊管理器类完整编译在客户端，含 57 个函数（`God / Fly / Ghost / Teleport / Summon / Slomo / ChangeSize / PlayersOnly` 等），运行时实例为空但类对象可达 |
+| 服务器→客户端作弊命令处理器 | `ClientCheatFly / ClientCheatGhost / ClientCheatWalk` 存在于 pawn 上 |
+| 测试模式门控函数 | `ActiveCustomTest`（C→S，无参，疑似"自定义测试模式"开关——服务器已忽略） |
+| 通用命令字符串通道 | `ServerExecRPC(FString Msg)`（PC 层） |
+| 主城测试层 | `Debug_AddItemToDepotBackpack`（往仓库加物品）、`RandomConstructTestData`（从物品表随机抽取 N 件 → 构造 PB 数据发送）、`SendTestPBData_01` |
+| 编辑器/调试残留 | `EditorCheatSpawnGhost`（生成鬼怪）、`GM`（本地函数）、`Server_SimCrash`、`ServerKillSelf` |
+| 开发者后门 RPC 全家族 | 14+ 个（`ServeraddATK / ServeraddHP / ServerWHOSYOURDADDY / ServerResetCD / ServerAddItem / ServerAddMoney / ServerAddSoul / ServerAddLingBi / ServerTeleport` …），完整签名见 HANDOFF.md S3.4 |
+| GAS 属性系统全表 | 100+ 个属性（增伤% / 近战·远程·AOE 系数 / 攻速 / 开箱速度 / 五行攻防 / 暴击全套）在客户端内存完整可读（HANDOFF.md S3.5） |
+| ServeraddHP 语义 | 往血池直接加值——旧版一次调用 +200000 即血条翻倍，非"回满" |
+| 交易行行情数据 | 仅存服务器端，客户端不落地（研究中全量扫描零命中） |
 
 ### 修复建议
 

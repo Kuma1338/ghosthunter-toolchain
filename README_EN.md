@@ -30,7 +30,26 @@ Security research toolchain and findings for **QuLing Tianshi (驱灵天师)**, 
 2. **No behavioral validation on interact RPCs** — `ServerSetPreBeInteractComponent` + `TryActivateAbility` can be scripted to batch-trigger interactions (auto-opening chests/mining/gathering). The server only range-checks (~70–90 m) with no frequency or behavioral-pattern analysis.
 3. **No distance/frequency validation on pickup RPC** — `Server_RequestPickupByUI` can be called in bulk for every drop in range.
 4. **Anti-cheat (Hercules) blind spots** — DLL injection (CreateRemoteThread + LoadLibraryW), `ProcessEvent` inline hooks (12-byte jump replacement), and shared-memory command queues run entirely undetected.
-5. **Weak anti-farming rule** — the "≈8 consecutive interactions without combat → kick" rule is trivially bypassed by dealing one hit in between.
+5. **Weak anti-farming rule** — roughly 8 interactions within a short window (measured ≈1–2 minutes) triggers a kick. The rule is a simple time-window counter: combat does **not** reset the count (measured); no deeper behavioral analysis exists.
+
+
+### 3. Other client-side content found during research (for the developers' reference)
+
+All of the following was sealed or neutralized by the 2026-09-24 update, but **the code is still compiled into the shipping client** — consider removing it from builds entirely:
+
+| Finding | Details |
+|---|---|
+| GM panel function | `ShowCheatPanel` (local; the pawn has a `CheatPanel` slot but no instance is ever created) — gated behind an unactivated privilege flag |
+| Full CheatManager class | UE's native cheat-manager class is fully compiled into the client: 57 functions (`God / Fly / Ghost / Teleport / Summon / Slomo / ChangeSize / PlayersOnly` ...); runtime instance is null but the class object is reachable |
+| Server→client cheat handlers | `ClientCheatFly / ClientCheatGhost / ClientCheatWalk` present on the pawn |
+| Test-mode gate function | `ActiveCustomTest` (C→S, no params; likely a "custom test mode" switch — now ignored by the server) |
+| Generic command-string channel | `ServerExecRPC(FString Msg)` on the PlayerController |
+| Main-city test layer | `Debug_AddItemToDepotBackpack` (add items to depot), `RandomConstructTestData` (draw N random items from the item table → construct PB data → send), `SendTestPBData_01` |
+| Editor/debug leftovers | `EditorCheatSpawnGhost` (spawn ghost), `GM` (local), `Server_SimCrash`, `ServerKillSelf` |
+| Full developer backdoor RPC family | 14+ (`ServeraddATK / ServeraddHP / ServerWHOSYOURDADDY / ServerResetCD / ServerAddItem / ServerAddMoney / ServerAddSoul / ServerAddLingBi / ServerTeleport` ...), full signatures in HANDOFF.md S3.4 |
+| Full GAS attribute table | 100+ attributes (damage% / melee·ranged·AOE coefficients / attack speed / chest-open speed / five-element attack & defense / full crit set) fully readable in client memory (HANDOFF.md S3.5) |
+| ServeraddHP semantics | Adds directly to the HP pool — one call of +200000 doubled the bar in the old build (not a full heal) |
+| Trade-house market prices | Server-side only, never cached on the client (full-memory scan found zero hits) |
 
 ### Remediation advice
 

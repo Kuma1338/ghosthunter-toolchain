@@ -1,8 +1,8 @@
-# GhostHunterClientSteam Client-Side Security Research
+# QuLing Tianshi (驱灵天师) Client-Side Security Research
 
 [中文版 (Chinese)](README.md)
 
-Security research toolchain and findings for `GhostHunterClientSteam` (a modified Unreal Engine 4.27 Chinese PVE ghost-hunting game). The research uses **read-only memory analysis + in-process function invocation (RPC replay)** to evaluate the client's attack surface and the strength of server-side validation.
+Security research toolchain and findings for **QuLing Tianshi (驱灵天师)**, a modified Unreal Engine 4.27 Chinese PVE ghost-hunting game (process name `GhostHunterClientSteam-Win64-Shipping.exe`). The research uses **read-only memory analysis + in-process function invocation (RPC replay)** to evaluate the client's attack surface and the strength of server-side validation.
 
 > This repository is intended as a vulnerability disclosure to the game's developers. All findings were verified on the live game; reproduction tools and remediation advice are included.
 

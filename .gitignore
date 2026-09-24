@@ -1,5 +1,7 @@
 # build artifacts (rebuild with overlay/build.bat / build7.bat)
-overlay/build/
+overlay/build/*
+!overlay/build/overlay.exe
+!overlay/build/xixing8.dll
 *.obj
 *.pdb
 *.exp

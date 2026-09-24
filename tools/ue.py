@@ -11,9 +11,10 @@ Verified facts for this game (GhostHunterClientSteam, modified UE 4.27):
   - GEngine = game.exe + 0xB11DB40  (UEngine*)
 """
 import struct
+import os
 import sys
 
-sys.path.insert(0, r"D:\gh_tools\tools")
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import ce  # noqa: E402
 
 MOD_BASE = None          # filled by attach()

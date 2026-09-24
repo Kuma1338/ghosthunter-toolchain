@@ -12,14 +12,14 @@
 | 文档术语 | 精确定义 | 对应实现/热键 |
 |---|---|---|
 | **ESP** | 屏幕覆盖层（分层窗口）显示容器/掉落物方框+名字+距离，纯客户端读内存 | overlay.exe |
-| **自动交互管线** | 按键后批量触发地图内金/红容器的交互流程（SetPre+技能激活→开箱→自动拾取掉落物） | M4 键，xixing.cpp runPipeline |
+| **隔空摸容器** | 按键后批量触发地图内金/红容器的交互流程（SetPre+技能激活→开箱→自动拾取掉落物） | M4 键，xixing.cpp runPipeline |
 | **latch / 句柄锁存** | 玩家手动交互一次后，从 RPC 记录环捕获 GAS 交互技能的 SpecHandle（小整数，每局变化） | watchManualOpen |
 | **自动拾取** | 对地面掉落物逐个发送拾取 RPC（红/金品质优先） | pickRedGoldDrops |
-| **攻击力调整** | 调用 ServeraddATK(Value) 使服务器上调角色攻击数值 | F9 键（当前 +200000）⚠️ 见 S4 |
-| **生命值调整** | 调用 ServeraddHP(Value) | F10 键 ⚠️ 见 S4 |
-| **开发者测试函数** | 游戏客户端编译内置的 Server* 系列调试 RPC（addATK/addHP/WHOSYOURDADDY/ResetCD/AddItem/AddAttribute…），历史版本服务器直接执行，**2026-09-24 更新后被服务器忽略** | NOS_PlayerHuman 类链 |
+| **增伤** | 调用 ServeraddATK(Value) 使服务器上调角色攻击数值 | F9 键（当前 +200000）⚠️ 见 S4 |
+| **回血** | 调用 ServeraddHP(Value) | F10 键 ⚠️ 见 S4 |
+| **后门函数** | 游戏客户端编译内置的 Server* 系列调试 RPC（addATK/addHP/WHOSYOURDADDY/ResetCD/AddItem/AddAttribute…），历史版本服务器直接执行，**2026-09-24 更新后被服务器忽略** | NOS_PlayerHuman 类链 |
 | **服务器校验（交互节奏）** | 连续约 8 次交互不打怪会被服务器踢出对局；节奏 = 开5-6个 → 杀一只 → 继续 | — |
-| **远程目标聚合** | （已否决的方案）把怪物 actor 移到玩家附近——服务器权威复制会立即拉回 | — |
+| **吸怪** | （已否决的方案）把怪物 actor 移到玩家附近——服务器权威复制会立即拉回 | — |
 | **12 字节跳转替换** | 进程内 hook 技术：备份目标函数前 12 字节，替换为 mov rax,imm64; jmp rax | xixing_dll.cpp |
 | **跳转替换（13 字节）** | 同上，用于 UActorComponent::CallRemoteFunction（RPC 记录） | installCRFHook |
 | **队列** | 共享内存 16 槽命令环，overlay/工具把 UFunction 调用排入，DLL 在游戏主线程执行 | XIXING_SHARED_V1 |
@@ -27,9 +27,9 @@
 
 ---
 
-# ⭐⭐⭐ 第四 Session（2026-09-24）：游戏更新 → 偏移重猎 → 开发者测试函数族被服务器封禁
+# ⭐⭐⭐ 第四 Session（2026-09-24）：游戏更新 → 偏移重猎 → 后门函数族被服务器封禁
 
-**背景**：游戏客户端更新（重编译），全部模块偏移失效。重猎后全链复活（ESP/队列/记录环正常），但 F9/F10 失效——探针证实**新服务器忽略整个开发者测试函数族**。
+**背景**：游戏客户端更新（重编译），全部模块偏移失效。重猎后全链复活（ESP/队列/记录环正常），但 F9/F10 失效——探针证实**新服务器忽略整个后门函数族**。
 
 ## S4.1 新偏移表（2026-09-24 游戏版本，全部实测验证）
 
@@ -46,12 +46,12 @@
 - DLL 已升版为 **xixing8.dll**（改名注入可绕过旧 DLL 占位，无需重启游戏）
 - **下次游戏更新的标准流程**（工具已固化，约 10 分钟）：`tools/offset_hunt*.py` ①特征码扫 .text 拿候选 → ②虚表引用计数消歧（真函数有数千个引用）→ ③堆内容扫描找名字池（引擎固定注册序 `None→ByteProperty→IntProperty`；**池块在低地址内存区 ~0x216...，不在 0x7FF 高堆**）→ ④类名=='World' 严格锁 GWorld → ⑤互证（池解出世界名+关卡类名）
 
-## S4.2 开发者测试函数族已被服务器封禁（本轮最重要结论）
+## S4.2 后门函数族已被服务器封禁（本轮最重要结论）
 
 **证据链**（全部客户端侧正常）：
 - ServeraddATK/ServeraddHP/WHOSYOURDADDY/ResetCD 函数仍存在，NetServer 标志在，参数布局未变（Value@0 i32）
 - 队列调用 result=1（真实执行、RPC 已发往服务器）
-- **但实测**：无敌（WHOSYOURDADDY）照常掉血、CD（ResetCD）照常转动、攻击力调整无伤害变化
+- **但实测**：无敌（WHOSYOURDADDY）照常掉血、CD（ResetCD）照常转动、增伤无伤害变化
 
 **结论**：服务器端更新后**忽略整个 Server\* 开发者测试族**（大概率本次更新主要目的即此）。S3.4 函数清单保留作参考，但全部标记为服务器侧失效。
 
@@ -70,7 +70,7 @@
 - **FUNC_Exec 面枚举**：无游戏自定义可执行命令（全部为标准 BlueprintCallable 面 + 主城测试层）
 - **结论固化：2026-09-24 更新把开发者/测试面从 RPC、本地函数、Exec 通道到主城测试层全部焊死**。无服务器配合的情况下，数值类功能（攻击力/生命值/物品/CD/移动模式）在新版本不可达
 
-**幸存且可用**：ESP（纯客户端读）、自动交互管线 M4（真实游戏系统：SetPre+TryActivateAbility+拾取）、全套工具链基础设施。
+**幸存且可用**：ESP（纯客户端读）、隔空摸容器 M4（真实游戏系统：SetPre+TryActivateAbility+拾取）、全套工具链基础设施。
 
 **未验证的线索**（下个 AI 从这里继续）：
 1. **`ActiveCustomTest`** [C→S, 无参]——疑似"激活自定义测试模式"的门控函数（新版本加的）。已三连发 `ActiveCustomTest → WHOSYOURDADDY → addATK(200000)`（全部 result=1），**等用户实测是否解锁**。若解锁 → 每次热键前先调它，全族复活
@@ -92,13 +92,13 @@
 
 # ⭐⭐ 第三 Session（2026-09-21 下午）：怪物解决方案 + GAS 属性系统完全解剖
 
-**背景**：用户要求"僵尸不主动来找我 / 范围伤害 / 僵尸受击范围变大 / 攻击力调整"。远程目标聚合→失败；肥胶囊→死路；**F9 攻击力调整已交付**；期间完整解剖了 GAS 属性系统 + 找到一整个开发者测试函数清单。
+**背景**：用户要求"僵尸不主动来找我 / 范围伤害 / 僵尸受击范围变大 / 增伤"。吸怪→失败；肥胶囊→死路；**F9 增伤已交付**；期间完整解剖了 GAS 属性系统 + 找到一整个后门函数清单。
 
-## S3.1 F9 攻击力调整（✅ 已验证交付）
+## S3.1 F9 增伤（✅ 已验证交付）
 
 ```
 pawn.ServeraddATK(99999)   [this=pawn，经队列 ProcessEvent，客户端→主机]
-→ 实测 ~26000 伤害/击，小怪单次高额伤害（用户确认伤害数字）
+→ 实测 ~26000 伤害/击，小怪一刀秒（用户确认伤害数字）
 ```
 - overlay 已实现：F9 热键 → `XiXing::fireDevRpc(mem, ue, "ServeraddATK", 99999)`（xixing.cpp:563，找 UFunction 用 `pawn+0x10` 类指针，parms 为 `int32@0`）
 - ⚠️ **它改的不是 GAS 的 Atk 属性**（实测打完 GAS Atk 值纹丝不动，见 3.5）——它的效果只能用伤害数字观测。同理 GAS Atk 读数不变 ≠ 未生效
@@ -111,17 +111,17 @@ pawn.ServeraddATK(99999)   [this=pawn，经队列 ProcessEvent，客户端→主
 - 污染自愈：怪物死亡即销毁（对局内数量 3→8→3 波动实证），新对局全新生成，无对象池残留（实测胶囊回 r=42/h=96）✅
 - 若坚持走此路：必须经队列调 **`UCapsuleComponent::SetCapsuleSize`**（引擎 API，会重建物理形状）——未测试。且注意肥胶囊会物理阻挡玩家 + 命中判定是否客户端侧存疑
 
-## S3.4 开发者测试函数清单（pawn 类链 `NOS_PlayerHuman` 上）
+## S3.4 后门函数清单（pawn 类链 `NOS_PlayerHuman` 上）
 ⚠️ **2026-09-24 起本节全部函数被服务器忽略（见 S4.2 探针证据）——清单仅作签名参考，勿再当作可用杠杆。**
 
 全部用 `this=pawn` + 队列调用。签名 = 参数名@偏移(大小)。RPC 方向判定：UFunction flags@+0xB0 低 dword **0x200000=NetServer（客户端可调）**、0x1000000=NetClient、0x4000=Multicast、无=本地。
 
 ```
-✅ ServeraddATK(Value@0, i32)                    攻击力调整（F9 已验证）
+✅ ServeraddATK(Value@0, i32)                    增伤（F9 已验证）
 ?  ServeraddHP / ServeraddMP / ServeraddYangQi / ServerreplyHP (Value@0, i32)
 ?  ServerAddAttribute(Attribute@0 56B, Method@0x38 u8, Value@0x3C f32, Type@0x40 u8)
      ⚠️ 未打通，攻坚状态见 3.6 —— 通用 GAS 属性调试接口，价值最高
-?  ServerWHOSYOURDADDY()                          不可伤害（无参数）
+?  ServerWHOSYOURDADDY()                          无敌（无参数）
 ?  ServerResetCD() / ReSetCD()                    技能CD秒重置（无参数）
 ?  ServerAddPerspective(PerspectiveData@0, 32B)   透视
 ?  ServerAddItem(ItemId@0 i32, Count@4, GNum@8, BType@C) / ServerAddItemAutoGNum
@@ -156,7 +156,7 @@ ASC = pawn+0xC38  (NOS_AbilitySystemComponent)
 +0x1B0 WaterDef             +0x1C0 WoodDef           +0x1D0 FireDef
 +0x1E0 SoilDef              +0x1F0 YingYangAtk       +0x200 YingAtk
 +0x210 YangAtk              +0x220 YingYangDef       +0x230 YangDef
-+0x240 YingDef              +0x250 YiShangPercent(易伤) +0x260 ZengShangPercent(攻击力调整)
++0x240 YingDef              +0x250 YiShangPercent(易伤) +0x260 ZengShangPercent(增伤)
 +0x270 AtkCriticalProbability +0x280 AtkCriticalDamage
 +0x290 YangQiCriticalProbability +0x2A0 YangQiCriticalDamage
 +0x2B0 CriticalstrikeResist +0x2C0 CriticaldamageResist
@@ -189,7 +189,7 @@ ASC = pawn+0xC38  (NOS_AbilitySystemComponent)
 +0x708 FiveBOOM             +0x718 ExecuteGhostScale
 ```
 ⚠️ **没有 AttackRange/触及距离属性**——近战范围不在 GAS 里（在技能/蒙太奇 notify 配置里，未探）。
-实用组合（用户目标=僵尸别打断开箱）：`OpenSpeed`↑ + `AttackSpeed`↑ + `ZengShangPercent`/`FinalCoefficient`/`MeleeCoefficient`↑ + F9 单次高额伤害。
+实用组合（用户目标=僵尸别打断开箱）：`OpenSpeed`↑ + `AttackSpeed`↑ + `ZengShangPercent`/`FinalCoefficient`/`MeleeCoefficient`↑ + F9 一刀秒。
 
 ## S3.6 ServerAddAttribute 攻坚状态（未打通，弹药已备齐）
 
@@ -245,7 +245,7 @@ XIXING_RPC_V1 (24+512×144):
 
 ---
 
-## ⭐ 自动交互管线（2026-09-21 session 2 已全部打通）
+## ⭐ 隔空摸容器（2026-09-21 session 2 已全部打通）
 
 **目标**：按指定键 → 全图金色+红色容器主机侧打开（真实掉落）→ 掉落物自动拾取到脚底。
 
@@ -270,7 +270,7 @@ XIXING_RPC_V1 (24+512×144):
 - `xxinject.py <pid> [dll]` — 注入器（ctypes，注意 GetProcAddress 必须设 restype=c_void_p 否则 64 位地址截断=游戏崩溃）
 - `xxfire8/xxfinal.py` — 单箱重放（SetPre+TryActivate）验证用
 - `xxcalib.py` — 从 RPC 记录环提取交互句柄 → xx_handle.txt
-- `xxstar.py` — **完整自动交互管线**：扫描全图金红箱 → 逐个 SetPre+激活（每箱 ~6s 通道）→ 逐个自动拾取掉落物
+- `xxstar.py` — **完整隔空摸容器**：扫描全图金红箱 → 逐个 SetPre+激活（每箱 ~6s 通道）→ 逐个自动拾取掉落物
 - `xxvacuum.py` — 独立自动拾取（逐个+活性检查）
 - `xixing_watch/xxsnap*.py` — ProcessEvent 高频轮询监听/内存快照（分析用）
 
@@ -300,8 +300,8 @@ XIXING_RPC_V1 (24+512×144):
 3. 走到目标区域 → python tools/xxstar.py   # 吸当前气泡：验证句柄→开全部金红箱
                                            # →红金掉落物进背包
    （可反复在不同区域运行；怪物仇恨期间手动手持黑驴蹄按住左键）
-4. F9 = 一键攻击力调整（ServeraddATK 99999，~26000/击小怪单次高额伤害，session 3 交付）
-   M4 = 自动交互管线启动 | M5 = 中止 | F2 = ESP 品质过滤 | END = 退出
+4. F9 = 一键增伤（ServeraddATK 99999，~26000/击小怪一刀秒，session 3 交付）
+   M4 = 隔空摸容器启动 | M5 = 中止 | F2 = ESP 品质过滤 | END = 退出
 ```
 - ESP overlay：F2 切品质过滤，END 退出（F5/F6/F8 旧方案已拆除，2026-09-21）
 - xxstar 每次运行自动验证句柄（拿最近的金红箱试开，失败自动试下一候选）
@@ -309,13 +309,13 @@ XIXING_RPC_V1 (24+512×144):
 
 ## 怪物功能状态（2026-09-21 session 3，详见顶部第三session章节）
 
-**F9 攻击力调整已交付**（ServeraddATK 99999 → ~26000/击单次高额伤害）。远程目标聚合/肥胶囊死路（机制见 S3.2/S3.3）。GAS 属性系统 + 开发者测试函数清单已完全解剖（S3.4/S3.5），ServerAddAttribute 通用属性调试接口攻坚至一半（S3.6）。
+**F9 增伤已交付**（ServeraddATK 99999 → ~26000/击一刀秒）。吸怪/肥胶囊死路（机制见 S3.2/S3.3）。GAS 属性系统 + 后门函数清单已完全解剖（S3.4/S3.5），ServerAddAttribute 通用属性调试接口攻坚至一半（S3.6）。
 
 **玩家自带潜行系统**（未自动化）：pawn 上 EnableStealth@+0x691（复制状态）、OnStealthSwitch/OnStealthCancel@+0x670/680 委托、HideCount@+0x1C9C；函数族 KxCharacter::SetStealth（local）+ SetStealthMaterial + HideWeapon。
 
 **黑驴蹄（清仇恨道具）**：手持按住左键，每秒清除 810m 内鬼怪仇恨。技能句柄已抓（0x77，跨对局稳定）。**裸 RPC 激活 = 崩溃**（崩因#8：道具驱动技能需要本地手持上下文+预测数据，绕过即内伤延迟死 —— 与输入驱动技能[交互]本质不同）。**实战方案：跑 xxstar 时手动手持+按住左键**。
 
-**未探路径**（按优先级）：`ServerWHOSYOURDADDY`/`ServerResetCD` 无参调试接口实测（验证调试接口族存活+不可伤害/CD清零直接可用）→ ServerAddAttribute 剩余假设（3.6）→ 近战触及距离（技能实例/蒙太奇 notify 半径，GAS 无此属性）→ PDC_CheckDamagePredicted_NoAdd 闸门 patch → bIsHideInShelter（pawn+0x1101）、阵营系统（CampProfile@+0xFE0）。
+**未探路径**（按优先级）：`ServerWHOSYOURDADDY`/`ServerResetCD` 无参调试接口实测（验证调试接口族存活+无敌/CD清零直接可用）→ ServerAddAttribute 剩余假设（3.6）→ 近战触及距离（技能实例/蒙太奇 notify 半径，GAS 无此属性）→ PDC_CheckDamagePredicted_NoAdd 闸门 patch → bIsHideInShelter（pawn+0x1101）、阵营系统（CampProfile@+0xFE0）。
 
 ## ESP/开箱覆盖范围
 
@@ -345,17 +345,17 @@ DTItemData 内联 @ 掉落物+0x450：ItemId@+0x458、Name@+0x460（PUA 乱码�
 
 **目标**：对 `GhostHunterClientSteam`（魔改 UE4.27 的中文抓鬼题材 PVE 游戏）做**读写**内存分析 + 进程内 hook：
 在屏幕覆盖层上显示高品质战利品容器/矿石/采集物的 ESP（方框 + 名字 + 距离），
-并通过重放客户端→主机 RPC 实现开箱、拾取、攻击力调整。
+并通过重放客户端→主机 RPC 实现开箱、拾取、增伤。
 
 > ⚠️ **2026-09-22 订正**：本节旧版写着"写入接口尚未接入 / 不做任何写入 / 此边界不可越过"。
 > **那句话已完全失效，勿再引用。** 写入早就接上了（`mem.h:52 write()` 被 `xixing.cpp:109` 调用），
-> F9 攻击力调整、自动交互开箱、attrfire 写属性全是写操作。照旧边界做判断会得出完全相反的结论。
+> F9 增伤、自动交互开箱、attrfire 写属性全是写操作。照旧边界做判断会得出完全相反的结论。
 > （`mem.h:2` 的注释同样陈旧，勿引用。）
 
 **当前实际在做的写操作**：
 - 注入进程内 hook DLL（ProcessEvent + `UActorComponent::CallRemoteFunction` 双钩）
 - 经游戏线程队列重放 C→S RPC：开箱 `ServerSetPreBeInteractComponent` + `ServerTryActivateAbility`、
-  拾取 `Server_RequestPickupByUI`、攻击力调整 `ServeraddATK`
+  拾取 `Server_RequestPickupByUI`、增伤 `ServeraddATK`
 - `WriteProcessMemory` 写 RPC 参数缓冲、`VirtualAllocEx` 在游戏进程内分配
 - `tools/fatcapsule.py` 写怪物碰撞胶囊尺寸（实验，已判死路，见 S3.3）
 - `tools/attrfire.py` 写 GAS 属性（`ServerAddAttribute` 攻坚中，未打通，见 S3.6）
@@ -517,7 +517,7 @@ python tools/ce.py read_memory '{"address": "0x7FF7AC81AB68", "size": 8}'
 > 且 `attrfire.py` 从不回读 `result`——那 8 发矩阵的 "no effect" 结论不可采信。
 > 顺序应为：`TODO-FIX.md` 任务 0～4 → 再回来做第 2 条。
 
-1. 实测 `ServerWHOSYOURDADDY()` / `ServerResetCD()`（无参，队列直调）——一步验证调试接口族是否存活；不可伤害直接解决"僵尸骚扰"（攻击/CD）
+1. 实测 `ServerWHOSYOURDADDY()` / `ServerResetCD()`（无参，队列直调）——一步验证调试接口族是否存活；无敌直接解决"僵尸骚扰"（攻击/CD）
    （**加上 `result` 回读后再打**，否则分不清"没执行"和"主机拒绝"，见 `TODO-FIX.md` 任务 0）
 2. `ServerAddAttribute` 剩余假设（S3.6 清单）：owner 用实例指针试一次 → UEnum 值暴力逆向分析 → ServeraddATK 新进程复测（观测=伤害数字）
 3. 组合打通后批量打 OpenSpeed/AttackSpeed/ZengShangPercent/FinalCoefficient → overlay 热键化（F10 一键全家桶）
@@ -544,7 +544,7 @@ python tools/ce.py read_memory '{"address": "0x7FF7AC81AB68", "size": 8}'
 │   ├── build_inject.bat    ← 编译 inject.exe
 │   ├── overlay.log         ← overlay.exe 的日志
 │   ├── xixing.log          ← **DLL 自己的日志**（和上面不是一个文件！排查 hook/队列/SEH 看这个）
-│   ├── build\overlay.exe   ← 交付物（ESP + M4自动交互 + F9攻击力调整热键）
+│   ├── build\overlay.exe   ← 交付物（ESP + M4自动交互 + F9增伤热键）
 │   ├── build\inject.exe    ← 独立注入器
 │   ├── build\xixing.dll    ← 一代（09-21 06:55，历史）
 │   ├── build\xixing3.dll   ← 三代（09-21 10:23，历史）
@@ -559,12 +559,12 @@ python tools/ce.py read_memory '{"address": "0x7FF7AC81AB68", "size": 8}'
 │         xixing_dll.cpp = DLL 源码（Shared/RpcShared 布局的唯一权威定义）
 ├── tools\              ← 全部纯 Python（ctypes），无 CE 依赖
 │   ├── uemem.py        ← RPM 反射读取器（pawn/世界/actor/UFunction/属性；FORCE_PID 锁进程）
-│   ├── xxstar.py       ← 完整自动交互管线（含 fire() 队列提交协议——唯一权威实现）
+│   ├── xxstar.py       ← 完整隔空摸容器（含 fire() 队列提交协议——唯一权威实现）
 │   ├── xxdeploy.py     ← 一键部署（找pid→注入→等pawn→武装记录仪→清残留队列）
 │   ├── xxinject.py     ← DLL 注入器（GetProcAddress 必须 restype=c_void_p）
 │   ├── attrfire.py     ← ServerAddAttribute 攻坚（UTF-16/全动态/自验证矩阵）★session 3
 │   ├── matchprobe.py   ← 对局探针（等pawn→胶囊残留检查→pawn类函数dump）
-│   ├── dump_pawn_fns.py    ← pawn 类函数全量 dump（出土开发者测试函数清单）
+│   ├── dump_pawn_fns.py    ← pawn 类函数全量 dump（出土后门函数清单）
 │   ├── dump_rpc_params.py  ← UFunction 参数布局/属性集/模板挖掘
 │   ├── fatcapsule.py / capwatch.py ← 肥胶囊实验（死路留档，含 one-shot/--watch）
 │   ├── xxcalib.py      ← RPC 环提取交互句柄 → xx_handle.txt

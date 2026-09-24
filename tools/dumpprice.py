@@ -4,8 +4,9 @@
 # anchor data point from Ethan: 九霄八卦晶 = 14062.
 # usage: python dumpprice.py          (dump all live drops)
 #        python dumpprice.py 14062    (also highlight this value everywhere)
+import os
 import sys, struct, subprocess
-sys.path.insert(0, r'D:\gh_tools\tools')
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 ANCHOR = int(sys.argv[1]) if len(sys.argv) > 1 else 14062
 

@@ -3,9 +3,10 @@ real F press and extracts the ServerTryActivateAbility handle with
 InputPressed=1 (the interact input; the movement spam has InputPressed=0)."""
 import ctypes
 import struct
+import os
 import sys
 
-sys.path.insert(0, r"D:\gh_tools\tools")
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import uemem
 from uemem import UE  # noqa: E402
 
@@ -43,6 +44,6 @@ if not candidates:
     sys.exit(1)
 best = max(candidates.items(), key=lambda kv: kv[1])[0]
 print(f"\nINTERACT HANDLE = 0x{best:X}")
-with open(r"D:\gh_tools\tools\xx_handle.txt", "w") as f:
+with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "xx_handle.txt"), "w") as f:
     f.write(f"{best}\n")
 print("saved to xx_handle.txt")

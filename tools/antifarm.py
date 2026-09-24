@@ -1,5 +1,6 @@
+import os
 import sys, time
-sys.path.insert(0, r'D:\gh_tools\tools')
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import uemem
 from uemem import UE
 ue = UE()

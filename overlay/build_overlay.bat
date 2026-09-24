@@ -1,5 +1,5 @@
 @echo off
-cd /d D:\gh_tools\overlay
+cd /d "%~dp0."
 taskkill /F /IM overlay.exe >nul 2>&1
 if exist build\overlay.exe copy /y build\overlay.exe build\overlay.bak.exe >nul
 call "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvars64.bat" >nul 2>&1

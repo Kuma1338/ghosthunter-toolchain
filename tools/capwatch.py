@@ -1,10 +1,11 @@
 # capwatch.py - background watcher: wait for game process + pawn, then apply
 # fat capsules once, then keep re-applying every 3s while the match lasts
 # (newly spawned monsters get written within one cycle).
+import os
 import sys, os, time, subprocess
 
 PY = sys.executable
-SCRIPT = r'D:\gh_tools\tools\fatcapsule.py'
+SCRIPT = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'fatcapsule.py')
 
 def game_running():
     out = subprocess.run(['tasklist', '/FI',

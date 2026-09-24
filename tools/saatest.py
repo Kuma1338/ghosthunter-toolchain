@@ -3,10 +3,11 @@
 #   phase 1: ServerAddAttribute(Atk) (Method,Type) matrix, self-validate on GAS Atk
 #   phase 2: with the winning combo, fire OpenSpeed (human-set template if found)
 # all reads/writes verified live; no hardcoded heap addresses.
+import os
 import sys, os, time, struct, ctypes, subprocess
 from ctypes import wintypes
 
-sys.path.insert(0, r'D:\gh_tools\tools')
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 P = ctypes.c_void_p
 k32 = ctypes.WinDLL("kernel32", use_last_error=True)
 k32.OpenFileMappingW.restype = P
@@ -22,7 +23,7 @@ k32.OpenProcess.restype = P
 k32.OpenProcess.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
 
 CMD_OFF, CMD_STRIDE = 40, 40
-LOG = r'D:\gh_tools\tools\saatest_log.txt'
+LOG = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'saatest_log.txt')
 _lines = []
 def log(s):
     _lines.append(s)
@@ -257,7 +258,7 @@ def run_match(ue, pid, pawn):
         log("phase1: no effect")
         return None
 
-    with open(r'D:\gh_tools\tools\saa_combo.txt', 'w') as f:
+    with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'saa_combo.txt'), 'w') as f:
         f.write(f"{combo[0]} {combo[1]} Atk {cur:.2f}\n")
 
     # ---- phase 2: OpenSpeed with winning combo ----

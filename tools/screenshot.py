@@ -1,3 +1,4 @@
+import os
 r"""Screenshot helper: capture primary screen to overlay/screen.png"""
 import ctypes
 from ctypes import wintypes
@@ -24,7 +25,7 @@ buf = ctypes.create_string_buffer(w * h * 4)
 gdi32.GetDIBits(memdc, bmp, 0, h, buf, ctypes.byref(bi), 0)
 
 img = Image.frombytes('RGBA', (w, h), buf.raw, 'raw', 'BGRA', 0, 1)
-img.save(r'D:\gh_tools\overlay\screen.png')
+img.save(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'overlay', 'screen.png'))
 print(f"captured {w}x{h}")
 
 user32.ReleaseDC(0, hdc)

@@ -1,5 +1,5 @@
 @echo off
-cd /d D:\gh_tools\overlay
+cd /d "%~dp0."
 call "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvars64.bat" >nul 2>&1
 cl /nologo /std:c++20 /EHsc /O2 /W3 /utf-8 /LD /Fo"build\dll8_" /Fe"build\xixing8.dll" src\xixing_dll.cpp /link user32.lib
 if exist build\xixing8.dll (echo DLL_BUILD_OK) else (echo DLL_BUILD_FAILED)

@@ -5,10 +5,11 @@ server-side, and later commands in the same burst referenced freed memory.
 This version fires one drop at a time and confirms each pickup."""
 import ctypes
 import struct
+import os
 import sys
 import time
 
-sys.path.insert(0, r"D:\gh_tools\tools")
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import uemem
 from uemem import UE, DROP_PICKED  # noqa: E402
 

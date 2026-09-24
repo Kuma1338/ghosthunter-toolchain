@@ -33,7 +33,7 @@ import time
 from ctypes import wintypes as wt
 
 # ---------------------------------------------------------------- constants
-BUILD_DIR = r"D:\gh_tools\overlay\build"
+BUILD_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "overlay", "build")
 DLL_POINTER = os.path.join(BUILD_DIR, "CURRENT_DLL.txt")
 DLL_FALLBACK = "xixing7.dll"
 
@@ -320,7 +320,7 @@ class Queue:
 
 def wait_for_match(timeout=0):
     """Block until the game has an in-match pawn. Returns (ue, pid, pawn)."""
-    sys.path.insert(0, r"D:\gh_tools\tools")
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
     started = time.time()
     pid = ue = None
     while True:

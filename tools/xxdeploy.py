@@ -3,6 +3,7 @@ import ctypes
 import ctypes.wintypes as wt
 import struct
 import subprocess
+import os
 import sys
 import time
 
@@ -39,14 +40,14 @@ if not pid:
     sys.exit(1)
 print(f"game pid: {pid}")
 
-r = subprocess.run([sys.executable, r"D:\gh_tools\tools\xxinject.py", str(pid),
-                    "D:/gh_tools/overlay/build/xixing4.dll"], capture_output=True, text=True)
+r = subprocess.run([sys.executable, os.path.join(os.path.dirname(os.path.abspath(__file__)), "xxinject.py"), str(pid),
+                    os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "overlay", "build", "xixing8.dll")], capture_output=True, text=True)
 print(r.stdout.strip())
 if "SUCCESS" not in r.stdout:
     sys.exit(1)
 time.sleep(4)
 
-sys.path.insert(0, r"D:\gh_tools\tools")
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import time as _t
 import uemem
 uemem.FORCE_PID = pid

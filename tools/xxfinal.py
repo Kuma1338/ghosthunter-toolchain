@@ -2,10 +2,11 @@ r"""THE REPLAY: SetPre(boxCom) + ServerTryActivateAbility(0x7E, 1).
 Auto-locks the box he faces; watches for open + loot."""
 import ctypes
 import struct
+import os
 import sys
 import time
 
-sys.path.insert(0, r'D:\gh_tools\tools')
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import uemem
 from uemem import UE, PAWN_IS, IS_PRE, IS_CURSTART, TB_STATE  # noqa: E402
 

@@ -1,8 +1,9 @@
 # dump_pawn_fns.py - list ALL functions and properties on the pawn's class
 # chain, filtered. goal: find ServeraddATK siblings (range/attack-distance
 # dev RPCs) and range-related properties on the character or weapon.
+import os
 import sys, subprocess
-sys.path.insert(0, r'D:\gh_tools\tools')
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 def find_game():
     out = subprocess.run(['tasklist', '/FI',

@@ -1,6 +1,7 @@
 r"""Direct DLL injector with explicit pid (avoids zombie-process matches)."""
 import ctypes
 import ctypes.wintypes as wt
+import os
 import sys
 
 k32 = ctypes.WinDLL("kernel32")
@@ -14,7 +15,7 @@ k32.CreateRemoteThread.restype = wt.HANDLE
 k32.CreateRemoteThread.argtypes = [wt.HANDLE, wt.LPVOID, ctypes.c_size_t, wt.LPVOID, wt.LPVOID, wt.DWORD, wt.LPVOID]
 
 pid = int(sys.argv[1])
-dll_path = sys.argv[2] if len(sys.argv) > 2 else r"D:\gh_tools\overlay\build\xixing.dll"
+dll_path = sys.argv[2] if len(sys.argv) > 2 else os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "overlay", "build", "xixing8.dll")
 
 h = k32.OpenProcess(0x1F0FFF, False, pid)
 assert h, f"open {pid} failed"

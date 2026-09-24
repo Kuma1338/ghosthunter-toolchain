@@ -2,11 +2,12 @@
 # 1. wait for pawn (match start)
 # 2. verify spawned GhostAI capsules are at class defaults (no pool residue)
 # 3. dump pawn-class functions (dev RPC hunt) + range-related properties
-# READ-ONLY. exits after dumping. output -> D:\gh_tools\tmp_matchprobe.txt
+# READ-ONLY. exits after dumping. output -> tmp_matchprobe.txt (script dir)
+import os
 import sys, os, time, struct, subprocess
 
-sys.path.insert(0, r'D:\gh_tools\tools')
-OUT = r'D:\gh_tools\tmp_matchprobe.txt'
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'tmp_matchprobe.txt')
 
 def find_game():
     out = subprocess.run(['tasklist', '/FI',

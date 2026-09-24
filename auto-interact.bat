@@ -1,5 +1,5 @@
 @echo off
-cd /d D:\gh_tools
+cd /d "%~dp0."
 echo ============================================
 echo   XXSTAR - suck gold/red boxes in this area
 echo   (stand still; hold LMB with hoof if mobs attack)

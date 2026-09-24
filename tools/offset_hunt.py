@@ -6,9 +6,10 @@
 #      block0 content decodes as a FNamePool name entry ("None"-style header)
 #   4. GWorld: near-neighborhood scan around GNames (engine globals cluster),
 #      validated structurally (world->PersistentLevel->Actors TArray)
+import os
 import sys, ctypes, struct, subprocess
 from ctypes import wintypes
-sys.path.insert(0, r'D:\gh_tools\tools')
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 k32 = ctypes.WinDLL("kernel32")
 k32.OpenProcess.restype = wintypes.HANDLE

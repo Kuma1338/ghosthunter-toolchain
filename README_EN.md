@@ -44,7 +44,7 @@ Security research toolchain and findings for **QuLing Tianshi (驱灵天师)**, 
 ├── README_EN.md         ← English version
 ├── HANDOFF.md           ← full technical knowledge base (offsets/protocols/mechanisms/dead ends, 588 lines, Chinese)
 ├── USAGE.md             ← tool usage guide (Chinese)
-├── overlay/             ← C++ tools (layered-window ESP + auto-interact pipeline + injected DLL source)
+├── overlay/             ← C++ tools (layered-window ESP + remote-container-touch (隔空摸容器) pipeline + injected DLL source)
 │   ├── src/             │   main.cpp / ue4.cpp / xixing.cpp / xixing_dll.cpp ...
 │   └── build*.bat       │   one-shot MSVC build
 ├── tools/               ← Python research toolchain (zero dependencies)

@@ -1,7 +1,8 @@
 # additem.py <ItemId> [Count] [GNum] [BType]  -- fire ServerAddItem via the queue
 # run in the DESKTOP terminal (session 1) with the overlay/game up.
+import os
 import sys, struct
-sys.path.insert(0, r'D:\gh_tools\tools')
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import xxq
 if len(sys.argv) < 2:
     print("usage: python additem.py <ItemId> [Count=10] [GNum=0] [BType=0]"); sys.exit(1)

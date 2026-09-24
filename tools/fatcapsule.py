@@ -13,10 +13,11 @@
 #   actor+0x1B8  RootComponent
 #   capsule+0x598 CapsuleHalfHeight (float)
 #   capsule+0x59C CapsuleRadius     (float)
+import os
 import sys, struct, time, ctypes, subprocess
 from ctypes import wintypes
 
-sys.path.insert(0, r'D:\gh_tools\tools')
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 NEW_RADIUS = 300.0
 NEW_HALFHEIGHT = 300.0

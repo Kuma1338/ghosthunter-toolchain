@@ -1,4 +1,4 @@
-r"""Auto-interact pipeline: open every gold/red box on the map with server-side
+r"""隔空摸容器 (remote container touching): open every gold/red box on the map with server-side
 loot, then vacuum all drops to the player's feet.
 
 Prerequisite: xx_handle.txt calibrated this session (one real F press).
@@ -7,10 +7,11 @@ Usage: python xxstar.py [max_boxes]
 """
 import ctypes
 import struct
+import os
 import sys
 import time
 
-sys.path.insert(0, r"D:\gh_tools\tools")
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import uemem
 from uemem import (UE, PAWN_IS, IS_PRE, TB_STATE, TB_COM, DROP_PICKED,  # noqa: E402
                    TOOL_COM, ACTOR_ROOT, ROOT_BOUNDS)
@@ -51,7 +52,7 @@ uf_setloc = ue.find_function(ue.class_of(pawn), "K2_SetActorLocation")
 uf_pickup = ue.find_function(ue.class_of(pawn), "Server_RequestPickupByUI")
 print(f"pawn={pawn:X} isCom={isCom:X} ASC={asc:X}")
 
-handle = int(open(r"D:\gh_tools\tools\xx_handle.txt").read().strip())
+handle = int(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "xx_handle.txt")).read().strip())
 print(f"interact handle = 0x{handle:X}")
 
 hm = k32.OpenFileMappingW(0xF001F, 0, "XIXING_SHARED_V1")
@@ -206,7 +207,7 @@ def read_ring_candidates():
             cands.append(h)
     # prepend the last-verified handle
     try:
-        prev = int(open(r"D:\gh_tools\tools\xx_handle.txt").read().strip())
+        prev = int(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "xx_handle.txt")).read().strip())
         if prev not in cands and prev not in KNOWN_ITEM_HANDLES:
             cands.insert(0, prev)
     except Exception:
@@ -245,7 +246,7 @@ for cand in candidates[:2]:   # derived candidates only - no blind firing
         print("OPENED -> HANDLE VERIFIED")
         handle = cand
         verified += 1
-        with open(r"D:\gh_tools\tools\xx_handle.txt", "w") as f:
+        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "xx_handle.txt"), "w") as f:
             f.write(f"{cand}\n")
         time.sleep(4.0)   # ability-end grace
         break

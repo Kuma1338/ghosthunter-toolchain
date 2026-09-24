@@ -1,7 +1,7 @@
 @echo off
 REM XiXing one-shot starter: ESP overlay + DLL deploy + logger arm
 REM Run AFTER entering a match. Then: press F on ONE box, then run tools\xxstar.py whenever you want to suck the area.
-cd /d D:\gh_tools
+cd /d "%~dp0."
 start "" overlay\build\overlay.exe
 python tools\xxdeploy.py
 echo.

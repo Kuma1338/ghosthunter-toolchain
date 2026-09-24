@@ -10,7 +10,7 @@
 
 | 日期 | 事件 |
 |---|---|
-| 2026-09-21 ~ 09-22 | 初始研究期：开发者测试 RPC 全族可用（攻击力 / 生命值 / 物品 / 无敌 / CD / 传送） |
+| 2026-09-21 ~ 09-22 | 初始研究期：后门 RPC 全族可用（攻击力 / 生命值 / 物品 / 无敌 / CD / 传送） |
 | 2026-09-24 | 官方发布更新：上述全部封堵（本工具链在同日验证了修复效果，见下表） |
 
 ## 发现汇总
@@ -43,7 +43,7 @@
 ├── README.md            ← 本文档
 ├── HANDOFF.md           ← 完整技术知识库（偏移表/协议/机制/死路清单，588 行）
 ├── USAGE.md             ← 工具使用说明
-├── overlay/             ← C++ 工具（分层窗口 ESP + 自动交互管线 + 注入 DLL 源码）
+├── overlay/             ← C++ 工具（分层窗口 ESP + 隔空摸容器 + 注入 DLL 源码）
 │   ├── src/             │   main.cpp / ue4.cpp / xixing.cpp / xixing_dll.cpp ...
 │   └── build*.bat       │   MSVC 一键编译
 ├── tools/               ← Python 研究工具链（无第三方依赖）
@@ -66,7 +66,7 @@
 ```
 1. 编译:  cd overlay && build.bat          (MSVC 2022, 自动产出 overlay.exe + DLL)
 2. 运行:  xxstart.bat                       (或手动 start overlay\build\overlay.exe)
-3. 对局内: F2 过滤 / M4 自动交互管线 / 热键见 USAGE.md
+3. 对局内: F2 过滤 / M4 隔空摸容器 / 热键见 USAGE.md
 4. 游戏更新后: python tools/offset_hunt.py  (约 10 分钟重定位全部偏移)
 ```
 

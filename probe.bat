@@ -1,7 +1,7 @@
 @echo off
 REM Run this ON THE GAME DESKTOP (session 1) - NOT over ssh.
 REM The queue shared-memory is session-local; ssh (session 0) cannot see it.
-cd /d D:\gh_tools\tools
+cd /d "%~dp0tools"
 echo ============================================================
 echo   probe.py - is the Server* backdoor family alive?
 echo   - enter a match first (not main city)
@@ -12,5 +12,5 @@ echo   - do NOT press overlay F9/M4 while this runs
 echo ============================================================
 python probe.py
 echo.
-echo === done - log saved to D:\gh_tools\tools\probe_log.txt ===
+echo === done - log saved to probe_log.txt ===
 pause

@@ -123,6 +123,21 @@ static __declspec(thread) bool tls_inDrain = false;
 
 static void __fastcall hookPE_forward(void* a, void* b, void* c);
 
+// portable: log next to this DLL
+static const char* logPathPortable() {
+    static char buf[MAX_PATH] = {};
+    if (!buf[0]) {
+        HMODULE hm = nullptr;
+        GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, (LPCWSTR)&logPathPortable, &hm);
+        wchar_t w[MAX_PATH];
+        if (hm && GetModuleFileNameW(hm, w, MAX_PATH)) {
+            wchar_t* slash = wcsrchr(w, L'\\');
+            if (slash) wcscpy_s(slash + 1, MAX_PATH - (slash + 1 - w), L"xixing.log");
+            WideCharToMultiByte(CP_UTF8, 0, w, -1, buf, MAX_PATH, 0, 0);
+        }
+    }
+    return buf;
+}
 static void log(const char* msg) {
     // dedup: identical consecutive messages only count, never touch the disk.
     // (the SEH handler can fire thousands of times per second - per-call
@@ -131,7 +146,7 @@ static void log(const char* msg) {
     static DWORD repeat = 0;
     if (strcmp(msg, lastMsg) == 0) { repeat++; return; }
     FILE* f = nullptr;
-    if (fopen_s(&f, "D:\\gh_tools\\overlay\\xixing.log", "a") == 0 && f) {
+    if (fopen_s(&f, logPathPortable(), "a") == 0 && f) {
         if (repeat) fprintf(f, "[%u]   (previous message x%u)\n", GetTickCount(), repeat);
         fprintf(f, "[%u] %s\n", GetTickCount(), msg);
         fclose(f);

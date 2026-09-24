@@ -1,6 +1,6 @@
 #pragma once
 // UE4 data extraction layer for GhostHunterClientSteam (modified UE 4.27).
-// All offsets verified via live memory analysis (see D:\gh_tools\NOTES.md).
+// All offsets verified via live memory analysis (see HANDOFF.md).
 #include "mem.h"
 #include <string>
 #include <vector>

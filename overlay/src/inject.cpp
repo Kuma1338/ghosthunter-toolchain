@@ -45,7 +45,7 @@ int wmain() {
         }
     }
 
-    const wchar_t* dllPath = L"D:\\gh_tools\\overlay\\build\\xixing.dll";
+    const wchar_t* dllPath = L"xixing8.dll";
     size_t bytes = (wcslen(dllPath) + 1) * sizeof(wchar_t);
     void* remote = VirtualAllocEx(h, nullptr, bytes, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
     if (!remote) { wprintf(L"VirtualAllocEx failed\n"); CloseHandle(h); return 1; }

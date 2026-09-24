@@ -1,3 +1,15 @@
+#include <windows.h>
+// portable: log next to this module
+static const char* logPathPortable(const wchar_t* fname) {
+    static char buf[MAX_PATH] = {};
+    if (!buf[0]) {
+        wchar_t w[MAX_PATH]; GetModuleFileNameW(nullptr, w, MAX_PATH);
+        wchar_t* slash = wcsrchr(w, L'\\');
+        if (slash) wcscpy_s(slash + 1, MAX_PATH - (slash + 1 - w), fname);
+        WideCharToMultiByte(CP_UTF8, 0, w, -1, buf, MAX_PATH, 0, 0);
+    }
+    return buf;
+}
 #include "ue4.h"
 #include <cmath>
 #include <cstring>
@@ -103,7 +115,7 @@ uintptr_t UE4::findFieldInStruct(uintptr_t scriptStruct, const char* fieldName) 
 // ---------------- world / levels ----------------
 static void ueLog(const char* msg) {
     FILE* f = nullptr;
-    if (fopen_s(&f, "D:\\gh_tools\\overlay\\overlay.log", "a") == 0 && f) {
+    if (fopen_s(&f, logPathPortable(L"overlay.log"), "a") == 0 && f) {
         fprintf(f, "[%u] %s\n", GetTickCount(), msg);
         fclose(f);
     }

@@ -6,16 +6,37 @@
 #include <psapi.h>
 
 // ---------------- shared log ----------------
+// portable: log next to overlay.exe
+static const char* logPathPortable() {
+    static char buf[MAX_PATH] = {};
+    if (!buf[0]) {
+        wchar_t w[MAX_PATH]; GetModuleFileNameW(nullptr, w, MAX_PATH);
+        wchar_t* slash = wcsrchr(w, L'\\');
+        if (slash) { wcscpy_s(slash + 1, MAX_PATH - (slash + 1 - w), L"overlay.log"); WideCharToMultiByte(CP_UTF8, 0, w, -1, buf, MAX_PATH, 0, 0); }
+        else WideCharToMultiByte(CP_UTF8, 0, w, -1, buf, MAX_PATH, 0, 0);
+    }
+    return buf;
+}
 static void xxLog(const char* msg) {
     FILE* f = nullptr;
-    if (fopen_s(&f, "D:\\gh_tools\\overlay\\overlay.log", "a") == 0 && f) {
+    if (fopen_s(&f, logPathPortable(), "a") == 0 && f) {
         fprintf(f, "[%u] [xx] %s\n", GetTickCount(), msg);
         fclose(f);
     }
 }
 
 // ---------------- DLL injection (LoadLibraryW via CreateRemoteThread) ----------------
-static const wchar_t* DLL_PATH = L"D:\\gh_tools\\overlay\\build\\xixing8.dll";
+// portable: resolve xixing8.dll next to overlay.exe (release layout)
+static const wchar_t* dllPathPortable() {
+    static wchar_t buf[MAX_PATH] = {};
+    if (!buf[0]) {
+        GetModuleFileNameW(nullptr, buf, MAX_PATH);
+        wchar_t* slash = wcsrchr(buf, L'\\');
+        if (slash) wcscpy_s(slash + 1, MAX_PATH - (slash + 1 - buf), L"xixing8.dll");
+    }
+    return buf;
+}
+#define DLL_PATH dllPathPortable()
 
 // verify a module is loaded via the PROCESS MODULE LIST (authoritative),
 // never GetExitCodeThread (that truncates the 64-bit HMODULE to 32 bits).
